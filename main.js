@@ -18,7 +18,7 @@ class SnakeBody
 
   grow() {
     const tail = this.head().copy();
-    this.body.push(createVector(tail.x, tail.y));
+    this.body.push(tail);
   }
 
   moveRight() {
@@ -47,6 +47,20 @@ class SnakeBody
     this.body.shift();
     tail.y += 1;
     this.body.push(tail);
+  }
+
+  touchedHimself() {
+    const head = this.head();
+    for (let i = 0; i < this.body.length - 1; i++) {
+      const part = this.body[i];
+      if (head === part) {
+        continue;
+      }
+      if (head.x === part.x && head.y === part.y) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
@@ -127,8 +141,6 @@ class Snake
     }
     this.direction = Snake.Direction.down;
   }
-
-
 }
 
 class GameBoard
@@ -177,13 +189,15 @@ class GameBoard
   }
 
   run() {
+    if (this.isSnakeHeadTouchedFood()) {
+      this.snake.grow();
+      this.spawnFood();
+    }
     this.snake.move();
     this.snake.draw();
     this.drawFood();
-    if (this.isSnakeHeadTouchedFood()) {
-      this.spawnFood()
-      this.snake.grow();
-    }
+
+
     this.drawResult();
   }
 
@@ -196,15 +210,20 @@ class GameBoard
   drawResult() {
     push();
     noStroke();
-    fill("red")
+    fill("red");
     textSize(5);
-    text(this.snake.score(), 0, this.height - 2)
+    text(this.snake.score(), 0, this.height - 2);
     pop();
   }
 
   shouldEndGame() {
-    const head = this.snake.body.head();
-    return (head.x >= this.width || head.x < 0) || (head.y >= this.height || head.y < 0);
+    const body = this.snake.body;
+    const head = body.head();
+    return (
+      (head.x > this.width - 1 || head.x < 0) || (head.y >= this.height - 1 || head.y < 0)
+      ||
+      body.touchedHimself()
+    );
   }
 }
 
@@ -212,10 +231,12 @@ let game;
 let resolution;
 
 function setup() {
-  createCanvas(windowWidth - 10, windowHeight - 10);
-  resolution = windowWidth / 50
-  frameRate(10);
-  game = new GameBoard(floor(width / resolution), floor(height / resolution));
+  const w = windowWidth / 2;
+  const h = windowHeight / 2;
+  createCanvas(w, h).style("display", "block").style("margin", "10vh auto");
+  resolution = windowWidth / 100;
+  frameRate(5);
+  game = new GameBoard(floor(w / resolution), floor(h / resolution));
 }
 
 function draw() {
@@ -223,7 +244,7 @@ function draw() {
   background(0xaa);
   if (game.shouldEndGame()) {
     background(0x00);
-    noLoop()
+    noLoop();
   }
   game.run();
 }
