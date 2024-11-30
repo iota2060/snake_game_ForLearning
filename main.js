@@ -171,19 +171,19 @@ class GameBoard
   }
 
   handleInput(key) {
-    if (key === "h") {
+    if (key === "a") {
       this.snake.toLeft();
     }
 
-    if (key === "l") {
+    if (key === "d") {
       this.snake.toRight();
     }
 
-    if (key === "k") {
+    if (key === "w") {
       this.snake.toUp();
     }
 
-    if (key === "j") {
+    if (key === "s") {
       this.snake.toDown();
     }
   }
